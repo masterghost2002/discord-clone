@@ -1,0 +1,19 @@
+Prims Rules
+
+When ever we add or remove models from the prisma we have to do two things
+first run --> npx prisma generate
+so that we can use prisma models from our node_modules
+second, npx prisma db push
+create all collections on our server
+
+
+export const db = globalThis.prisma || new PrismaClient();
+
+if(process.env.NODE_ENV !== 'production') globalThis.prisma = db
+
+why, because nextJS use hot reload, wo when ever we do somechanges nextJS will hot reload and
+prisma will create a new instance, so we have added a if statmenet as globalThis is now effected
+by hotreload
+
+
+TODO: Learn form validation iwth zod
