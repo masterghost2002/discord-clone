@@ -48,6 +48,7 @@ const ServerSidebarHeader = ({
         )}
         {isAdmin && (
           <DropdownMenuItem
+            onClick = {()=>onOpen("editServer", {server})}
             className='px-3 py-3 text-sm cursor-pointer'
           >
             Server Settings
@@ -59,6 +60,7 @@ const ServerSidebarHeader = ({
         {isAdmin && (
           <DropdownMenuItem
             className='px-3 py-3 text-sm cursor-pointer'
+            onClick={()=>onOpen('members',{server})}
           >
             Manage Members
             <Users
@@ -69,6 +71,7 @@ const ServerSidebarHeader = ({
         {isModerator && (
           <DropdownMenuItem
             className='px-3 py-3 text-sm cursor-pointer'
+            onClick={()=>onOpen('createChannel',{server})}
           >
             Create Channel
             <PlusCircle
@@ -83,6 +86,7 @@ const ServerSidebarHeader = ({
         }
         {isAdmin && (
           <DropdownMenuItem
+            onClick={()=>onOpen('deleteServer', {server})}
             className='text-rose-500 px-3 py-3 text-sm cursor-pointer'
           >
             Delete Server
@@ -93,6 +97,7 @@ const ServerSidebarHeader = ({
         )}
         {!isAdmin && (
           <DropdownMenuItem
+          onClick={()=>onOpen('leaveServer', {server})}
             className='text-rose-500 px-3 py-3 text-sm cursor-pointer'
           >
             Leave Server

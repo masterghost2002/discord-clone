@@ -1,10 +1,27 @@
 import { currentProfile } from '@/util/current-profile'
 import { redirect } from 'next/navigation'
 import { db } from '@/lib/db'
-import { ChannelType } from '@prisma/client'
+import { ChannelType, MemberRole } from '@prisma/client'
 import ServerSidebarHeader from '@/components/sidebars/server-sidebar-header'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import ServerSearch from '@/components/sidebars/server-search'
+import { Hash, Mic, ShieldAlert, ShieldCheck, Video } from 'lucide-react'
+import { Separator } from '@/components/ui/separator'
+import ChannelList from '@/components/sidebars/channel-list'
 type ServerSidebarProps = {
     serverId: string
+}
+
+const channelIconMap = {
+    [ChannelType.TEXT]:<Hash className='mr-2 h-4 w-4'/>,
+    [ChannelType.AUDIO]:<Mic className='mr-2 h-4 w-4'/>,
+    [ChannelType.VIDEO]:<Video className='mr-2 h-4 w-4'/>,
+};
+
+const roleIconMap = {
+    [MemberRole.GUEST]: null,
+    [MemberRole.MODERATOR]: <ShieldCheck className='h-4 w-4 mr-2 text-indigo-500'/>,
+    [MemberRole.ADMIN]: <ShieldAlert className='h-4 w-4 mr-2 text-rose-500'/>
 }
 const ServerSidebar = async ({ serverId }: ServerSidebarProps) => {
     const profile = await currentProfile();
@@ -30,15 +47,9 @@ const ServerSidebar = async ({ serverId }: ServerSidebarProps) => {
         }
     });
     if(!server) return redirect('/');
-    const textChannels = server.channels.filter(channel=>{
-        channel.type === ChannelType.TEXT
-    });
-    const audioChannels = server.channels.filter(channel=>{
-        channel.type === ChannelType.AUDIO
-    });
-    const videoChannels = server.channels.filter(channel=>{
-        channel.type === ChannelType.VIDEO
-    });
+    const textChannels = server.channels.filter(channel=>channel.type === ChannelType.TEXT);
+    const audioChannels = server.channels.filter(channel=>channel.type === ChannelType.AUDIO);
+    const videoChannels = server.channels.filter(channel=>channel.type === ChannelType.VIDEO);
     const members = server.members.filter(member=>member.profileId !== profile.id);
     const role = server.members.find(member=>member.profileId === profile.id)?.role;
     return (
@@ -49,6 +60,77 @@ const ServerSidebar = async ({ serverId }: ServerSidebarProps) => {
                 server={server}
                 role={role}
             />
+            <ScrollArea
+                className='flex-1 px-3'
+            >
+                <div
+                    className='mt-2'
+                >
+                    <ServerSearch
+                        data = {
+                            [
+                                {
+                                    label:"Text Channels",
+                                    type:"channel",
+                                    data:textChannels?.map(channel=>(
+                                        {
+                                            id:channel?.id,
+                                            name:channel.name,
+                                            icon:channelIconMap[channel.type]
+                                        }
+                                    ))
+                                },
+                                {
+                                    label:"Audio Channels",
+                                    type:"channel",
+                                    data:audioChannels?.map(channel=>(
+                                        {
+                                            id:channel?.id,
+                                            name:channel.name,
+                                            icon:channelIconMap[channel.type]
+                                        }
+                                    ))
+                                },
+                                {
+                                    label:"Video Channels",
+                                    type:"channel",
+                                    data:videoChannels?.map(channel=>(
+                                        {
+                                            id:channel?.id,
+                                            name:channel.name,
+                                            icon:channelIconMap[channel.type]
+                                        }
+                                    ))
+                                },
+                                {
+                                    label:"Members",
+                                    type:"member",
+                                    data:members?.map(member=>(
+                                        {
+                                            id:member?.id,
+                                            name:member.profile.name,
+                                            icon:roleIconMap[member.role]
+                                        }
+                                    ))
+                                }
+                            ]
+
+                        }
+                    />
+                </div>
+                <Separator
+                    className='bg-zinc-200 dark:bg-zinc-700 rounded-md my-2'
+                />
+                {
+                    !!textChannels?.length && (
+                        <div
+                            className='mb-2'
+                        >
+                            <ChannelList/>
+                        </div>
+                    )
+                }
+            </ScrollArea>
         </div>
     )
 }
