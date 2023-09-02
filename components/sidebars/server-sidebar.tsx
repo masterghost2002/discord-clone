@@ -5,27 +5,20 @@ import { ChannelType, MemberRole } from '@prisma/client'
 import ServerSidebarHeader from '@/components/sidebars/server-sidebar-header'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import ServerSearch from '@/components/sidebars/server-search'
-import { Hash, Mic, ShieldAlert, ShieldCheck, Video } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
-import ChannelList from '@/components/sidebars/channel-list'
+import ChannelAndMemberListHeader from '@/components/sidebars/channel-member-list-header'
+import ServerChannel from '@/components/sidebars/server-channel'
+import { channelIconMap, roleIconMap } from '@/util/iconMap'
+import ServerMember from '@/components/sidebars/server-member'
 type ServerSidebarProps = {
     serverId: string
-}
-
-const channelIconMap = {
-    [ChannelType.TEXT]:<Hash className='mr-2 h-4 w-4'/>,
-    [ChannelType.AUDIO]:<Mic className='mr-2 h-4 w-4'/>,
-    [ChannelType.VIDEO]:<Video className='mr-2 h-4 w-4'/>,
-};
-
-const roleIconMap = {
-    [MemberRole.GUEST]: null,
-    [MemberRole.MODERATOR]: <ShieldCheck className='h-4 w-4 mr-2 text-indigo-500'/>,
-    [MemberRole.ADMIN]: <ShieldAlert className='h-4 w-4 mr-2 text-rose-500'/>
 }
 const ServerSidebar = async ({ serverId }: ServerSidebarProps) => {
     const profile = await currentProfile();
     if (!profile) return redirect('/');
+
+    // this is an example of nextjs server actions to 
+    // this will fetch the servers from the db without creating a api end-point
     const server = await db.server.findUnique({
         where: {
             id: serverId,
@@ -46,11 +39,19 @@ const ServerSidebar = async ({ serverId }: ServerSidebarProps) => {
             }
         }
     });
+
+    // if no server found redirect to home page
     if(!server) return redirect('/');
+
+    // filtering out the channels acc to their type
     const textChannels = server.channels.filter(channel=>channel.type === ChannelType.TEXT);
     const audioChannels = server.channels.filter(channel=>channel.type === ChannelType.AUDIO);
     const videoChannels = server.channels.filter(channel=>channel.type === ChannelType.VIDEO);
+
+    // filter out all the members except the logged user itself
     const members = server.members.filter(member=>member.profileId !== profile.id);
+
+    // current logged in user role
     const role = server.members.find(member=>member.profileId === profile.id)?.role;
     return (
         <div
@@ -126,7 +127,93 @@ const ServerSidebar = async ({ serverId }: ServerSidebarProps) => {
                         <div
                             className='mb-2'
                         >
-                            <ChannelList/>
+                            <ChannelAndMemberListHeader
+                                sectionType='channels'
+                                channelType={ChannelType.TEXT}
+                                role={role}
+                                label="Text Channels"
+                            />
+                            {
+                                textChannels.map(channel=>(
+                                    <ServerChannel
+                                        key={channel.id}
+                                        channel={channel}
+                                        role={role} 
+                                        server={server}
+                                    />
+                                ))
+                            }
+                        </div>
+                    )
+                }
+                {
+                    !!audioChannels?.length && (
+                        <div
+                            className='mb-2'
+                        >
+                            <ChannelAndMemberListHeader
+                                sectionType='channels'
+                                channelType={ChannelType.AUDIO}
+                                role={role}
+                                label="Audio Channels"
+                            />
+                            {
+                                audioChannels.map(channel=>(
+                                    <ServerChannel
+                                        key={channel.id}
+                                        channel={channel}
+                                        role={role}
+                                        server={server}
+                                    />
+                                ))
+                            }
+                        </div>
+                    )
+                }
+                 {
+                    !!videoChannels?.length && (
+                        <div
+                            className='mb-2'
+                        >
+                            <ChannelAndMemberListHeader
+                                sectionType='channels'
+                                channelType={ChannelType.VIDEO}
+                                role={role}
+                                label="Video Channels"
+                            />
+                            {
+                                videoChannels.map(channel=>(
+                                    <ServerChannel
+                                        key={channel.id}
+                                        channel={channel}
+                                        role={role}
+                                        server={server}
+                                    />
+                                ))
+                            }
+                        </div>
+                    )
+                }
+                {
+                    !!members?.length && (
+                        <div
+                            className='mb-2'
+                        >
+                            <ChannelAndMemberListHeader
+                                sectionType='members'
+                                role={role}
+                                label="Members"
+                                server={server}
+                            />
+                            {
+                                members.map(member=>(
+                                    <ServerMember
+                                    key={member.id}
+                                        server={server}
+                                        member={member}
+                                    />
+                                ))
+                            }
                         </div>
                     )
                 }

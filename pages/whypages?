@@ -1,0 +1,3 @@
+NextJS 13 app router have some issues while working with socket.io
+
+for that purpose we will be using the benefits of nextjs 12 ro fullfill our needs.

@@ -1,6 +1,6 @@
 "use client"
 import axios from 'axios'
-import { useParams, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import qs from 'query-string'
 import { useForm } from 'react-hook-form'
 import {
@@ -33,36 +33,34 @@ import { channelFormType } from '@/util/forms.schema/channel.form.schema'
 import { ChannelType } from '@prisma/client'
 import { useEffect } from 'react'
 
-// modal for creating a new channel
-export default function CreateChannelModal() {
+// modal for editing existing channel
+export default function EditChannelModal() {
     const {isOpen, onClose, type, data} = useModal();
-    const isModalOpen = isOpen && type === "createChannel";
-    const {channelType} = data;
+    const isModalOpen = isOpen && type === "editChannel";
+    const {channel, server} = data;
     const router = useRouter();
-    const params = useParams();
     const form = useForm({
         resolver: channelFormSchema,
         defaultValues: {
             name: "",
-            type: channelType || ChannelType.TEXT,
+            type: channel?.type ||  ChannelType.TEXT,
         }
     });
     const isLoading = form.formState.isSubmitting;
     const onSubmit = async (values: channelFormType) => {
         try {
             const url = qs.stringifyUrl({
-                url:`/api/channels`,
+                url:`/api/channels/${channel?.id}`,
                 query:{
-                    serverId:params?.serverId
+                    serverId:server?.id
                 }
             })
-            await axios.post(url, values);
+            await axios.patch(url, values);
             form.reset();
             router.refresh();
             onClose();
         } catch (error) {
-            console.log(error);
-            
+            console.log(error);   
         }
 
     }
@@ -71,12 +69,11 @@ export default function CreateChannelModal() {
         onClose();
     }
     useEffect(()=>{
-        if(channelType){
-            form.setValue("type", channelType)
-        }else{
-            form.setValue("type", ChannelType.TEXT)
+        if(channel){
+            form.setValue("name",channel.name);
+            form.setValue("type",channel.type);
         }
-    }, [channelType, form]);
+    }, [form, channel]);
     return (
         <Dialog open={isModalOpen} onOpenChange={handleClose}>
             <DialogContent
@@ -88,7 +85,7 @@ export default function CreateChannelModal() {
                     <DialogTitle
                         className='text-center text-2xl font-bold'
                     >
-                        Create Channel
+                        Edit Channel
                     </DialogTitle>
                 </DialogHeader>
                 <Form {...form}>
