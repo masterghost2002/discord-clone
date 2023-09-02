@@ -1,4 +1,6 @@
 import ChatHeader from "@/components/chat/chat-header";
+import ChatInput from "@/components/chat/chat-input";
+import ChatMessages from "@/components/chat/chat-messages";
 import { db } from "@/lib/db";
 import type { ChannelIdPageProps } from "@/types";
 import { currentProfile } from "@/util/current-profile";
@@ -9,17 +11,17 @@ export default async function ChannelIdPage({ params }: ChannelIdPageProps) {
   if (!profile)
     return redirectToSignIn();
   const channel = await db.channel.findUnique({
-    where:{
-      id:params?.channelId
+    where: {
+      id: params?.channelId
     }
   });
   const member = await db.member.findFirst({
-    where:{
-      serverId:params.serverId,
-      profileId:profile.id
+    where: {
+      serverId: params.serverId,
+      profileId: profile.id
     }
   });
-  if(!channel || !member)
+  if (!channel || !member)
     redirect('/');
   return (
     <div
@@ -29,6 +31,30 @@ export default async function ChannelIdPage({ params }: ChannelIdPageProps) {
         name={channel?.name}
         serverId={channel.serverId}
         type="channel"
+      />
+      <ChatMessages
+        member={member}
+        name={channel.name}
+        type="channel"
+        apiUrl="/api/messages"
+        socketUrl="/api/socket/messages"
+        socketQuery={{
+          channelId: channel.id,
+          serverId: channel.serverId
+        }
+        }
+        paramKey="channelId"
+        paramValue={channel.id}
+        chatId={channel.id}
+      />
+      <ChatInput
+        name={channel.name}
+        type="channel"
+        apiUrl="/api/socket/messages"
+        query={{
+          channelId: channel.id,
+          serverId: channel.serverId
+        }}
       />
     </div>
   )

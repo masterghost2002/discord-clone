@@ -107,4 +107,63 @@ export type NextApiResponseServerIO = NextApiResponse & {
 export type SocketContextType = {
     socket: any | null;
     isConnected: boolean;
+};
+
+// chat input component props type
+export type ChatInputPropsType = {
+    apiUrl:string;
+    query:Record<string, any>;
+    name:string;
+    type:"conversation" | "channel";
+}
+
+// emoji picker children of chatinput
+export type EmojiPickerProps = {
+    onChange:(value:string)=>void;
+}
+
+type paramKey = "channelId" | "conversationId";
+// chat messages props
+export type ChatMessagesProps = {
+    name:string,
+    member:Member,
+    chatId:string,
+    apiUrl:string,
+    socketUrl:string,
+    socketQuery:Record<string, string>,
+    paramKey:paramKey;
+    paramValue:string,
+    type:"channel" | "conversation"
+}
+
+// chat welcome component props type
+export type ChatWelcomeProps = {
+    name:string,
+    type:"channel" | "conversation"
+}
+
+// chat query useChatQuery hook props
+export type ChatQueryProps = {
+    queryKey:string;
+    apiUrl:string;
+    paramKey:paramKey;
+    paramValue:string
+
+}
+
+// message type
+export type MessageWithMemberWithProfile = Message & {member:Member & {profile:Profile}}
+
+// chat item props
+export type ChatItemsProps = {
+    id:string,
+    content:string,
+    member:Member &{profile:Profile},
+    timestamp:string,
+    fileUrl:string | null;
+    deleted:boolean,
+    currentMember:Member;
+    isUpdated:boolean,
+    socketUrl:string,
+    socketQuery:Record<string, string>
 }
