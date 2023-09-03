@@ -93,6 +93,9 @@ export type MemberIdPageProps = {
     params:{
         serverId:string;
         memberId:string;
+    },
+    searchParams:{
+        video?:boolean;
     }
 }
 
@@ -167,3 +170,20 @@ export type ChatItemsProps = {
     socketUrl:string,
     socketQuery:Record<string, string>
 }
+
+// 
+export type ChatSocketProps = {
+    addKey:string;
+    updateKey:string;
+    queryKey:string;
+}
+
+
+type ChatScrollProps = {
+    chatRef: React.RefObject<HTMLDivElement>;
+    bottomRef: React.RefObject<HTMLDivElement>;
+    shouldLoadMore: boolean;
+    loadMore: () => void;
+    count: number;
+  };
+  

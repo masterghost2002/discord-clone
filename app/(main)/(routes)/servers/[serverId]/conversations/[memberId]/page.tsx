@@ -1,32 +1,36 @@
 
 import ChatHeader from "@/components/chat/chat-header";
+import ChatInput from "@/components/chat/chat-input";
+import ChatMessages from "@/components/chat/chat-messages";
 import { getOrCreateConversation } from "@/lib/conversation";
 import { db } from "@/lib/db";
+import MediaRoom from "@/components/media-room";
 import type { MemberIdPageProps } from "@/types"
 import { currentProfile } from "@/util/current-profile"
 import { redirectToSignIn } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 export default async function MemberIdPage({
-  params
-}:MemberIdPageProps) {
+  params,
+  searchParams
+}: MemberIdPageProps) {
 
   const profile = await currentProfile();
 
   // if not a authorizes user
-  if(!profile) return redirectToSignIn();
+  if (!profile) return redirectToSignIn();
 
   const currentMember = await db.member.findFirst({
-    where:{
-      serverId:params.serverId,
-      profileId:profile.id
+    where: {
+      serverId: params.serverId,
+      profileId: profile.id
     },
-    include:{
-      profile:true
+    include: {
+      profile: true
     }
   });
 
   // if not the member of the server
-  if(!currentMember)
+  if (!currentMember)
     return redirect('/');
 
 
@@ -44,13 +48,13 @@ export default async function MemberIdPage({
     will redirect you the server page,
     whihc again redirect you to general channel
   */
-  if(!conversation)
+  if (!conversation)
     return redirect(`/server/${params.serverId}`);
 
-  const {memberOne, memberTwo} = conversation;
+  const { memberOne, memberTwo } = conversation;
 
   // simple condition to filter out our self from memberOne or memberTwo
-  const otherMember = memberOne.profileId === profile.id ? memberTwo:memberOne;
+  const otherMember = memberOne.profileId === profile.id ? memberTwo : memberOne;
   return (
     <div
       className="bg-white dark:bg-[#313338] flex flex-col h-full"
@@ -61,6 +65,43 @@ export default async function MemberIdPage({
         serverId={params.serverId}
         type="conversation"
       />
+      {searchParams.video && (
+        <MediaRoom
+          chatId={conversation.id}
+          video={true}
+          audio={true}
+         
+        />
+  )}
+      {
+        !searchParams.video && (
+          <>
+            <ChatMessages
+              member={currentMember}
+              name={otherMember.profile.name}
+              chatId={conversation.id}
+              type="conversation"
+              apiUrl="/api/direct-messages"
+              paramKey="conversationId"
+              paramValue={conversation.id}
+              socketUrl="/api/socket/direct-messages"
+              socketQuery={{
+                conversationId: conversation.id
+              }}
+            />
+            <ChatInput
+              name={otherMember.profile.name}
+              type="conversation"
+              apiUrl="/api/socket/direct-messages"
+              query={{
+                conversationId: conversation.id
+              }}
+             
+            />
+          </>
+        )
+      }
+
     </div>
   )
 }

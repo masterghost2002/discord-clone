@@ -20,6 +20,12 @@ export const useChatQuery = ({
         const res = await fetch(url);
         return res.json();
     };
+
+    /*
+    Falling in case our socket broke
+    this query will fetch message from db every sec if
+    websocket it broke
+    */
     const {
         data,
         fetchNextPage,
