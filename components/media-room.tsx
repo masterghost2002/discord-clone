@@ -58,6 +58,7 @@ export default function MediaRoom({
             connect={true}
             video={video}
             audio={audio}
+            
         >
             <VideoConference>
 
