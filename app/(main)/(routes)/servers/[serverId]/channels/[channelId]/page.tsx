@@ -20,7 +20,7 @@ export default async function ChannelIdPage({ params }: ChannelIdPageProps) {
   const member = await db.member.findFirst({
     where: {
       serverId: params.serverId,
-      profileId: profile.id
+      profileId: profile.id,
     }
   });
   if (!channel || !member)
